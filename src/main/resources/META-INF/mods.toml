@@ -1,0 +1,43 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''修复 EMI 侧两条 JEI 兼容链路上缺失的一环：IRecipeLayoutBuilder#addSlotToWidget（JEI 15.10+ 的滚动格控件）。
+
+EMI 内置的 JEMI（需要装 JEI）和 TooManyRecipeViewers（不需要 JEI）都把交给控件工厂的槽位直接丢在 (0, 0)，于是用 IGuiHelper#createScrollGridFactory 排布产出的配方（例如 CrockPot 的猪灵以物易物）在 EMI 里会把所有物品挤在同一个格子上。本模组在两个桥各自的布局器上注入，改为按滚动格的实际位置摆放槽位；超出一页能容纳的槽位顺序往下排（EMI 侧没有滚动条）。
+
+两条链路互斥、各自独立生效，不需要任何配置：装了 JEI 就走 JEMI 那条，装了 TMRV 就走 TMRV 那条，两个都没装时只会记一条警告并跳过。只影响 EMI 上的渲染，JEI 自身的显示不受影响。仅客户端。'''
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="emi"
+    mandatory=false
+    versionRange="[1.1.0,)"
+    ordering="NONE"
+    side="CLIENT"
+[[dependencies.${mod_id}]]
+    modId="jei"
+    mandatory=false
+    versionRange="[15.10.0,)"
+    ordering="NONE"
+    side="CLIENT"
+[[dependencies.${mod_id}]]
+    modId="toomanyrecipeviewers"
+    mandatory=false
+    versionRange="[0.9.0,)"
+    ordering="NONE"
+    side="CLIENT"

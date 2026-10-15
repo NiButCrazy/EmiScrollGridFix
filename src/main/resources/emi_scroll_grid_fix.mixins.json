@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.nibutcrazy.emiscrollgridfix.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "emi_scroll_grid_fix.refmap.json",
+  "client": [
+    "JemiRecipeLayoutBuilderMixin",
+    "TmrvRecipeLayoutBuilderMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
