@@ -10,6 +10,10 @@
     "TmrvRecipeWidgetMixin",
     "TmrvScrollGridWidgetAccessor",
     "TmrvScrollBarWidgetMixin",
+    "JemiRecipeSlotMixin",
+    "JemiSlotWidgetMixin",
+    "EmiSlotWidgetMixin",
+    "JemiRecipeMixin",
     "EmiRecipeScreenScrollMixin"
   ],
   "injectors": {

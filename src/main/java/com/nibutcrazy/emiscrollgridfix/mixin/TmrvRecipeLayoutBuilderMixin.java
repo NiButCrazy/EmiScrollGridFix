@@ -86,8 +86,8 @@ public abstract class TmrvRecipeLayoutBuilderMixin {
             EmiScrollGridFix.LOGGER.info("Widget slots from a JEI scroll grid are now laid out in a fixed grid on EMI (TMRV bridge): origin ({}, {}), {} columns, {} visible rows", layout.x(), layout.y(), layout.columns(), layout.rows());
         }
         // 坐标语义与 JEI 一致：物品在 (x, y)，槽框画在 (x - 1, y - 1)
-        var x = layout.x() + index % layout.columns() * ScrollGridLayout.SLOT_SIZE + 1;
-        var y = layout.y() + index / layout.columns() * ScrollGridLayout.SLOT_SIZE + 1;
+        var x = layout.x() + index % layout.columns() * ScrollGridLayout.SLOT_SIZE + ScrollGridLayout.SLOT_ITEM_OFFSET + 1;
+        var y = layout.y() + index / layout.columns() * ScrollGridLayout.SLOT_SIZE + ScrollGridLayout.SLOT_ITEM_OFFSET;
         var slot = this.addSlot(role).setPosition(x, y);
         // 记账：这条工厂一共占用了哪些槽位。等构建卡片控件时若发现超过一页容量，
         // 就交给 TMRV 自带的滚动格控件（带滚动条），否则保持现在这套固定坐标。

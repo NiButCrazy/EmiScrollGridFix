@@ -19,6 +19,13 @@ public record ScrollGridLayout(int x, int y, int columns, int rows) {
     public static final int SLOT_SIZE = 18;
 
     /**
+     * 物品相对格点（槽框左上角）的偏移：JEI 的约定是 <b>1</b>——槽框画在格点上、物品在格点 +1。
+     * 两个桥的非溢出路径都用它摆位，所以想整体微调槽位（比如贴图与这个约定差一像素）改这里一处即可：
+     * 改成 0 就是物品与格点对齐（整体上移/左移 1px）。
+     */
+    public static final int SLOT_ITEM_OFFSET = 0;
+
+    /**
      * JEI 的 {@code AbstractScrollWidget.getScrollBoxScrollbarExtraWidth()}：
      * SCROLLBAR_WIDTH(14) + SCROLLBAR_PADDING(2)。
      */

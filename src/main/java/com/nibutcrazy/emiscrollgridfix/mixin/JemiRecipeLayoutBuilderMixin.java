@@ -1,6 +1,7 @@
 package com.nibutcrazy.emiscrollgridfix.mixin;
 
 import com.nibutcrazy.emiscrollgridfix.EmiScrollGridFix;
+import com.nibutcrazy.emiscrollgridfix.JemiPagination;
 import com.nibutcrazy.emiscrollgridfix.RuntimeSlotBackground;
 import com.nibutcrazy.emiscrollgridfix.ScrollGridLayout;
 import dev.emi.emi.jemi.impl.JemiRecipeLayoutBuilder;
@@ -73,9 +74,13 @@ public abstract class JemiRecipeLayoutBuilderMixin {
             EmiScrollGridFix.LOGGER.info("Widget slots from a JEI scroll grid are now laid out in a fixed grid on EMI: origin ({}, {}), {} columns, {} visible rows", layout.x(), layout.y(), layout.columns(), layout.rows());
         }
         // 超出一页能容纳的格子时顺序往下排，EMI 里没有滚动条，至少保证物品不丢失、不重叠
-        var x = layout.x() + index % layout.columns() * ScrollGridLayout.SLOT_SIZE + 1;
-        var y = layout.y() + index / layout.columns() * ScrollGridLayout.SLOT_SIZE + 1;
+        var x = layout.x() + index % layout.columns() * ScrollGridLayout.SLOT_SIZE + ScrollGridLayout.SLOT_ITEM_OFFSET + 1;
+        var y = layout.y() + index / layout.columns() * ScrollGridLayout.SLOT_SIZE + ScrollGridLayout.SLOT_ITEM_OFFSET;
         var slot = this.addSlot(role, x, y);
+        // 记账：翻页时要知道这条工厂占了多少格、每个槽位是第几个（index 与坐标用的是同一个按工厂计的序号）
+        var entry = JemiPagination.entryFor((Object) (Object) this, widgetFactory, layout);
+        entry.countSlot();
+        JemiPagination.recordSlot(slot, entry, index);
         // 滚动格在 JEI 里由控件自己画槽框，JEMI 没有对应控件，所以这里给槽位补上标准槽框。
         // 用 setBackground(…) 而不是 JEI 15.20 才有的 setStandardSlotBackground()，
         // 好处是兼容更早的 JEI，且 mod 之后自己设背景时会直接覆盖掉这个，不会两层叠画。
