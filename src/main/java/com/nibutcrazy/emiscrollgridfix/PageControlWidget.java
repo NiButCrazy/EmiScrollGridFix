@@ -29,14 +29,20 @@ public class PageControlWidget extends Widget {
     private final int rowsPerPage;
     private final int pageCount;
 
+    /**
+     * 整个槽位区域（相对配方原点）。滚轮在这里也翻页，不只是控件那一条竖条。
+     */
+    private final Bounds slotArea;
+
     private int page;
 
-    public PageControlWidget(PageScroller scroller, int x, int y, int rowsPerPage, int pageCount) {
+    public PageControlWidget(PageScroller scroller, int x, int y, int rowsPerPage, int pageCount, Bounds slotArea) {
         this.scroller = scroller;
         this.x = x;
         this.y = y;
         this.rowsPerPage = Math.max(1, rowsPerPage);
         this.pageCount = Math.max(1, pageCount);
+        this.slotArea = slotArea;
     }
 
     @Override
@@ -66,13 +72,13 @@ public class PageControlWidget extends Widget {
     }
 
     /**
-     * 两个按钮之间的空白处响应滚轮：向上滚 = 上一页，向下滚 = 下一页。
+     * 滚轮翻页：整个槽位区域（{@link #slotArea}）与本控件占的那条竖条都生效——向上滚 = 上一页，向下滚 = 下一页。
      *
-     * <p>返回是否"消费"这次滚轮：只要指针落在中缝上就吞掉（哪怕已经到头、什么都没做），
-     * 免得滚轮到边界后继续传给 EMI 去翻配方。按钮本身不算中缝，滚轮不归这里管。
+     * <p>返回是否"消费"这次滚轮：指针落在范围内就吞掉（哪怕已经翻到头、什么都没做），
+     * 免得滚轮到边界后继续传给 EMI 去翻配方。
      */
     public boolean mouseScrolled(int mouseX, int mouseY, double scrollDelta) {
-        if (!getBounds().contains(mouseX, mouseY) || overButton(mouseY)) {
+        if (!getBounds().contains(mouseX, mouseY) && !slotArea.contains(mouseX, mouseY)) {
             return false;
         }
         if (scrollDelta != 0) {
@@ -88,10 +94,6 @@ public class PageControlWidget extends Widget {
         this.page = target;
         scroller.emiScrollGridFixGoToPage(target, rowsPerPage);
         return true;
-    }
-
-    private boolean overButton(int mouseY) {
-        return mouseY < y + BUTTON_HEIGHT || mouseY >= y + getBounds().height() - BUTTON_HEIGHT;
     }
 
     private boolean hovered(int mouseX, int mouseY, int buttonY) {

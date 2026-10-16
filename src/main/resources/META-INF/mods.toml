@@ -6,11 +6,18 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
-description='''修复 EMI 侧两条 JEI 兼容链路上缺失的一环：IRecipeLayoutBuilder#addSlotToWidget（JEI 15.10+ 的滚动格控件）。
+description='''修复 EMI 侧两条「JEI 插件兼容链路」共同缺失的一环：IRecipeLayoutBuilder#addSlotToWidget（JEI 15.10+ 的滚动格控件）。
 
-EMI 内置的 JEMI（需要装 JEI）和 TooManyRecipeViewers（不需要 JEI）都把交给控件工厂的槽位直接丢在 (0, 0)，于是用 IGuiHelper#createScrollGridFactory 排布产出的配方（例如 CrockPot 的猪灵以物易物）在 EMI 里会把所有物品挤在同一个格子上。本模组在两个桥各自的布局器上注入，改为按滚动格的实际位置摆放槽位；超出一页能容纳的槽位顺序往下排（EMI 侧没有滚动条）。
+几个东西的关系：
+· JEI 是配方查看器本体，也是插件 API 的提供方；
+· EMI 是另一个查看器，本身不认 JEI 插件，靠内置的 JEMI（需要装 JEI）把 JEI 的配方类别转过来；
+· TMRV（TooManyRecipeViewers）是另一条兼容链路，自带一份 JEI API，不需要装 JEI。
 
-两条链路互斥、各自独立生效，不需要任何配置：装了 JEI 就走 JEMI 那条，装了 TMRV 就走 TMRV 那条，两个都没装时只会记一条警告并跳过。只影响 EMI 上的渲染，JEI 自身的显示不受影响。仅客户端。'''
+JEMI 与 TMRV 都把交给滚动格控件的槽位一律丢在 (0, 0)，于是用 IGuiHelper#createScrollGridFactory 排布产出的配方（例如 CrockPot 的猪灵以物易物）在 EMI 里会把所有物品挤在同一个格子上。本模组在两个桥各自的布局器上注入，改为按滚动格的实际位置摆放槽位。
+
+槽位超过一页时：TMRV 那条换成上下翻页按钮（在原滚动条位置，支持点击与鼠标滚轮，滚动条本身被隐藏）；JEMI 那条没有可复用的滚动控件，超出的槽位顺序排到下方。
+
+两条链路互斥、各自独立生效，不需要任何配置。只影响 EMI 上的显示，JEI 自身的界面不受影响；缺哪个桥就只记一条警告并跳过。仅客户端。'''
 [[dependencies.${mod_id}]]
     modId="forge"
     mandatory=true

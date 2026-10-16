@@ -5,6 +5,7 @@ import com.nibutcrazy.emiscrollgridfix.PageScroller;
 import com.nibutcrazy.emiscrollgridfix.ScrollGridLayout;
 import com.nibutcrazy.emiscrollgridfix.ScrollGridRegistrations;
 import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.nolij.toomanyrecipeviewers.impl.jei.api.gui.builder.RecipeLayoutBuilder;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
@@ -80,7 +81,9 @@ public abstract class TmrvRecipeWidgetMixin {
                 var pageCount = (subset.size() + capacity - 1) / capacity;
                 // 与 TMRV 的滚动条同一条竖条：滚动格 setPosition 会把 rect 右移 1，宽度是 列数×18 + 滚动条宽(10)
                 var stripX = layout.x() + 1 + layout.columns() * ScrollGridLayout.SLOT_SIZE;
-                this.widgets.add(new PageControlWidget(scroller, stripX, layout.y(), rows, pageCount));
+                // 滚轮范围：整个槽位区域（含 TMRV 那 1px 右移），指针在格子任意处都能翻页
+                var slotArea = new Bounds(layout.x(), layout.y(), 1 + layout.columns() * ScrollGridLayout.SLOT_SIZE, rows * ScrollGridLayout.SLOT_SIZE);
+                this.widgets.add(new PageControlWidget(scroller, stripX, layout.y(), rows, pageCount, slotArea));
             }
         }
     }

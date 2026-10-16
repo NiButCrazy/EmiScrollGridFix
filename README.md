@@ -1,11 +1,17 @@
 # EMI Scroll Grid Fix
 
-给 EMI 侧的两条 JEI 兼容链路补上缺失的一环：`IRecipeLayoutBuilder#addSlotToWidget`（JEI 15.10+ 的滚动格控件）。
+给 EMI 侧的两条「JEI 插件兼容链路」补上缺失的一环：`IRecipeLayoutBuilder#addSlotToWidget`（JEI 15.10+ 的滚动格控件）。
 
-- **JEMI**：EMI 内置的 JEI 兼容层，需要装 JEI。
-- **TMRV**（TooManyRecipeViewers）：独立兼容层，不需要装 JEI。
+## 这几个东西是什么关系
 
-两者都把控件工厂丢掉、槽位落在 `(0, 0)`，本模组在各自布局器上各注入一处，按滚动格的实际区域摆放槽位。
+| 名称 | 是什么 | 与本模组的关系 |
+|---|---|---|
+| **JEI** | 配方查看器本体，也是插件 API 的提供方（mod 们注册配方类别的地方） | 不碰它的界面；本模组修的是"JEI 插件配方 → EMI"这条转译链 |
+| **EMI** | 另一个配方查看器，玩家实际看到的界面是它 | bug 就出现在它的界面上（物品全挤一格） |
+| **JEMI** | EMI **内置**的 JEI 兼容层，**需要装 JEI**：把 JEI 的配方类别转给 EMI | 本模组修它的 `JemiRecipeLayoutBuilder#addSlotToWidget` |
+| **TMRV** | TooManyRecipeViewers，第三方兼容层，**自带一份 JEI API、不需要装 JEI** | 本模组修它的 `RecipeLayoutBuilder#addSlotToWidget`，并把溢出换成翻页按钮 |
+
+也就是说：**JEMI 和 TMRV 是两条互斥的路线**（装了 JEI 走 JEMI，装了 TMRV 走 TMRV），两条路线的同一个方法都把控件工厂丢掉、槽位落在 `(0, 0)`，本模组在各自的布局器上各注入一处，按滚动格的实际区域摆放槽位；两条链路各自独立生效、无需配置，缺哪个桥就只记一条警告并跳过。
 
 > 名字的由来：`EMI`（症状出现在 EMI 界面）+ `ScrollGrid`（被修的是 JEI 的滚动格控件）+ `Fix`。
 > 更严格地说，mixin 目标是两个桥的布局器（`dev.emi.emi.jemi.impl.JemiRecipeLayoutBuilder` 与
