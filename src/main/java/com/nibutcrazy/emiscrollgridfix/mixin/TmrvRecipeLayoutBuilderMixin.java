@@ -3,7 +3,9 @@ package com.nibutcrazy.emiscrollgridfix.mixin;
 import com.nibutcrazy.emiscrollgridfix.EmiScrollGridFix;
 import com.nibutcrazy.emiscrollgridfix.RuntimeSlotBackground;
 import com.nibutcrazy.emiscrollgridfix.ScrollGridLayout;
+import com.nibutcrazy.emiscrollgridfix.ScrollGridRegistrations;
 import dev.nolij.toomanyrecipeviewers.impl.jei.api.gui.builder.RecipeLayoutBuilder;
+import dev.nolij.toomanyrecipeviewers.impl.jei.api.gui.builder.RecipeSlotBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.widgets.ISlottedWidgetFactory;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -53,6 +55,12 @@ public abstract class TmrvRecipeLayoutBuilderMixin {
     public abstract IRecipeSlotBuilder addSlot(RecipeIngredientRole role);
 
     /**
+     * 布局器里已创建的所有槽位（按创建顺序），用来记下我们这条工厂的槽位下标。
+     */
+    @Shadow
+    public abstract java.util.List<RecipeSlotBuilder> getSlots();
+
+    /**
      * 每个控件工厂已经分出去多少个格子，语义与 JemiRecipeLayoutBuilderMixin 中的一致。
      */
     @Unique
@@ -81,6 +89,9 @@ public abstract class TmrvRecipeLayoutBuilderMixin {
         var x = layout.x() + index % layout.columns() * ScrollGridLayout.SLOT_SIZE + 1;
         var y = layout.y() + index / layout.columns() * ScrollGridLayout.SLOT_SIZE + 1;
         var slot = this.addSlot(role).setPosition(x, y);
+        // 记账：这条工厂一共占用了哪些槽位。等构建卡片控件时若发现超过一页容量，
+        // 就交给 TMRV 自带的滚动格控件（带滚动条），否则保持现在这套固定坐标。
+        ScrollGridRegistrations.record((RecipeLayoutBuilder) (Object) this, widgetFactory, layout, this.getSlots().size() - 1);
         // TMRV 的槽位默认 drawBack = false（符合 JEI 语义：滚动格的槽框本来由控件自己画），
         // 而这条链路上没有那个控件，所以这里主动补上槽框。mod 之后若自己调用 setBackground，
         // 会直接覆盖掉这个，不会两层叠画。

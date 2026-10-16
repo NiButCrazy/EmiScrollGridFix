@@ -6,7 +6,10 @@
   "refmap": "emi_scroll_grid_fix.refmap.json",
   "client": [
     "JemiRecipeLayoutBuilderMixin",
-    "TmrvRecipeLayoutBuilderMixin"
+    "TmrvRecipeLayoutBuilderMixin",
+    "TmrvRecipeWidgetMixin",
+    "TmrvScrollGridWidgetAccessor",
+    "TmrvScrollBarWidgetMixin"
   ],
   "injectors": {
     "defaultRequire": 0

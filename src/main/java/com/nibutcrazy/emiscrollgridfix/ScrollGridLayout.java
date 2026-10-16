@@ -27,6 +27,13 @@ public record ScrollGridLayout(int x, int y, int columns, int rows) {
     private static final String COLUMNS_FIELD = "columns";
 
     /**
+     * 一页能容纳的槽位数量。
+     */
+    public int capacity() {
+        return columns * rows;
+    }
+
+    /**
      * @return 布局信息；如果不是滚动格控件、或者拿不到有效区域，返回 {@code null}（调用方保持 JEMI 原本的行为）
      */
     public static ScrollGridLayout of(ISlottedWidgetFactory<?> widgetFactory) {
