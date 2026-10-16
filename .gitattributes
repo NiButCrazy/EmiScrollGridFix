@@ -1,5 +1,11 @@
-# Disable autocrlf on generated files, they always generate with LF
-# Add any extra files or paths here to make git stop saying they
-# are changed when only line endings change.
-src/generated/**/.cache/cache text eol=lf
-src/generated/**/*.json text eol=lf
+# 统一换行：仓库里存 LF，检出到 Windows 也保持 LF
+# （之前用全局 core.autocrlf=true，每次 git 都会刷一堆 "LF will be replaced by CRLF" 的 warning）
+* text=auto eol=lf
+
+# Windows 批处理脚本保持 CRLF：cmd.exe 对 LF 的 .bat 不友好
+*.bat text eol=crlf
+
+# 二进制文件不做换行转换（gradle wrapper 的 jar 也在内）
+*.png binary
+*.jar binary
+*.zip binary
