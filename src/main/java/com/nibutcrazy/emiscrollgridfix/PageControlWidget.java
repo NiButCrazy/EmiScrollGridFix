@@ -65,6 +65,22 @@ public class PageControlWidget extends Widget {
         return false;
     }
 
+    /**
+     * 两个按钮之间的空白处响应滚轮：向上滚 = 上一页，向下滚 = 下一页。
+     *
+     * <p>返回是否"消费"这次滚轮：只要指针落在中缝上就吞掉（哪怕已经到头、什么都没做），
+     * 免得滚轮到边界后继续传给 EMI 去翻配方。按钮本身不算中缝，滚轮不归这里管。
+     */
+    public boolean mouseScrolled(int mouseX, int mouseY, double scrollDelta) {
+        if (!getBounds().contains(mouseX, mouseY) || overButton(mouseY)) {
+            return false;
+        }
+        if (scrollDelta != 0) {
+            goTo(scrollDelta > 0 ? page - 1 : page + 1);
+        }
+        return true;
+    }
+
     private boolean goTo(int target) {
         if (target < 0 || target > pageCount - 1) {
             return false;
@@ -72,6 +88,10 @@ public class PageControlWidget extends Widget {
         this.page = target;
         scroller.emiScrollGridFixGoToPage(target, rowsPerPage);
         return true;
+    }
+
+    private boolean overButton(int mouseY) {
+        return mouseY < y + BUTTON_HEIGHT || mouseY >= y + getBounds().height() - BUTTON_HEIGHT;
     }
 
     private boolean hovered(int mouseX, int mouseY, int buttonY) {
@@ -85,8 +105,8 @@ public class PageControlWidget extends Widget {
         var color = !enabled ? DISABLED_COLOR : hovered ? HOVER_COLOR : ENABLED_COLOR;
         for (var row = 0; row < 4; row++) {
             var width = 1 + row * 2;
-            var rowY = up ? buttonY + 3 + row : buttonY + 3 + (3 - row);
-            var rowX = x + (WIDTH - width) / 2;
+            var rowY = up ? buttonY + 1 + row : buttonY + 2 + (3 - row);
+            var rowX = 2 + x + (WIDTH - width) / 2;
             draw.fill(rowX, rowY, rowX + width, rowY + 1, color);
         }
     }

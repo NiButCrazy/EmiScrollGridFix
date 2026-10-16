@@ -9,7 +9,8 @@
     "TmrvRecipeLayoutBuilderMixin",
     "TmrvRecipeWidgetMixin",
     "TmrvScrollGridWidgetAccessor",
-    "TmrvScrollBarWidgetMixin"
+    "TmrvScrollBarWidgetMixin",
+    "EmiRecipeScreenScrollMixin"
   ],
   "injectors": {
     "defaultRequire": 0
