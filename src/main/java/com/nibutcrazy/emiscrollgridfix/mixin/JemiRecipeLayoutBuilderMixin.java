@@ -71,7 +71,7 @@ public abstract class JemiRecipeLayoutBuilderMixin {
         }
         var index = this.emiScrollGridFix$assignedCounts.merge(widgetFactory, 1, Integer::sum) - 1;
         if (EmiScrollGridFix.LOG_LAYOUT_APPLIED.compareAndSet(false, true)) {
-            EmiScrollGridFix.LOGGER.info("Widget slots from a JEI scroll grid are now laid out in a fixed grid on EMI: origin ({}, {}), {} columns, {} visible rows", layout.x(), layout.y(), layout.columns(), layout.rows());
+            EmiScrollGridFix.LOGGER.info("Widget slots from a JEI scroll grid are now laid out in a fixed grid on EMI (JEMI bridge): origin ({}, {}), {} columns, {} visible rows", layout.x(), layout.y(), layout.columns(), layout.rows());
         }
         // 超出一页能容纳的格子时顺序往下排，EMI 里没有滚动条，至少保证物品不丢失、不重叠
         var x = layout.x() + index % layout.columns() * ScrollGridLayout.SLOT_SIZE + ScrollGridLayout.SLOT_ITEM_OFFSET + 1;

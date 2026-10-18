@@ -49,7 +49,7 @@ public IRecipeSlotBuilder addSlotToWidget(RecipeIngredientRole role, ISlottedWid
 - **TMRV 侧多了一步（1.1.2 起）**：某个滚动格工厂的槽位数量**超过一页能容纳的格子**时，不再顺序往下排，而是把这些槽位交给 TMRV 自带的 `ScrollGridWidget`（会把不可见行 `setVisible(false)` 裁掉），位置仍用该工厂原本的区域；没超出的保持固定坐标（外观与 JEI 一致）。
 - **翻页按钮而非滚动条（1.1.3 起）**：交给滚动格之后，TMRV 那个滚动条会被藏掉（渲染与点击都取消），并在它原本占的竖条里放翻页控件：顶部上一页、底部下一页。滚动条这时只当"当前第几页"的状态载体——滚动格的定位与裁剪仍然由它驱动，所以不用自己维护页码状态，也不会和它的裁剪逻辑打架。
 - **JEMI 那条也翻页了（1.2.0 起）**：JEMI 没有可复用的滚动控件，槽位坐标又是在构造时定死的（`JemiRecipeSlot.x/y` 与 EMI `SlotWidget` 的 `x/y` 都是 `final`），所以这套是自己实现的：记账（哪条工厂、多少格、第几个）→ 槽位控件按页**改 `getBounds()` 的返回值**（EMI 的物品与自绘槽框都基于它画）→ **绝对坐标画的 JEI 槽框/overlay 用 `@Redirect` 一起上移** → 不在当前页的槽位直接不画、边界返回 `Bounds.EMPTY`（悬停/提示/点击一并失效）→ 配方控件建好后挂上与 TMRV 同一个翻页控件。按钮与滚轮的交互和 TMRV 那条完全一致。
-- **顺手隐藏 JEI 自带的「标签页」（1.2.0 起）**：JEI 15.20 起内部插件会为每个注册表建一个标签信息类别（uid 形如 `minecraft:tag_recipes/item`），而 EMI 自己就有物品标签信息，两套并存时 EMI 里会多出一串重复的标签页。这里用 EMI 的公开 API 把这类配方从 EMI 里移掉——EMI 配方界面的标签页是按「**有配方的**类别」推出来的（`EmiApi.mapRecipes`），配方没了标签页自然消失；`removeRecipes` 的谓词对「当前与将来」的配方都生效，所以也不依赖插件加载顺序。JEI（经 JEMI）与 TMRV 创建的类别 id 都是 JEI 的 `RecipeType` uid，因此一个谓词覆盖两条链路。
+- **顺手隐藏 JEI 自带的「标签页」（1.2.0 起）**：JEI 15.20 起内部插件会为每个注册表建一个标签信息类别（uid 形如 `minecraft:tag_recipes/item`），而 EMI 自己就有物品标签信息，两套并存时 EMI 里会多出一串重复的标签页。这里用 EMI 的公开 API 把这类配方从 EMI 里移掉——EMI 配方界面的标签页是按「**有配方的**类别」推出来的（`EmiApi.mapRecipes`），配方没了标签页自然消失；`removeRecipes` 的谓词对「当前与将来」的配方都生效，所以也不依赖插件加载顺序。**只在真正的 JEMI 路径时做这件事**：TMRV 与 JEI 互斥，并且 TMRV 会注册一个内置的仿冒 `jei`（所以日志里看到 `jei=15.62.0.219` 其实是它自带的）；TMRV 自己会隐藏这些标签页，本模组看到 TMRV 就**先跳过**（日志里会打一行 `skipping` 说明原因）。
 - **槽位微调**：`ScrollGridLayout.SLOT_ITEM_OFFSET` 是物品相对格点的偏移（JEI 约定是 1，当前为 0 即与格点对齐），两条链路的非溢出路径共用它，想整体挪槽位改这一处即可。
 - 页号由翻页控件自己记（1.1.6 起）：TMRV 的滚动条是**连续滚动**模型（单位是行、`maxScroll = 总行数 − 可见行数`、内部还会 clamp），所以"页号 × 行数"不一定等于它的滚动量、也不能反推页号；滚动量只当输出。副作用是**最后一页会贴到内容末尾**，行数除不尽时最后一页会与上一页有几行重叠（连续滚动模型的固有行为）。
 - 翻页箭头是**自绘**的（10px 竖条内一个 4 行实心三角，三态：正常 / 悬停 / 禁用）。**试过复用 EMI 的 `ButtonWidget` + `buttons.png` 里那对上下箭头（`u=232/244, v=48`，EMI 源码里 `IntEdit` 数字微调用的同一对），但有坑**：EMI 的按钮假定贴图是三态，禁用时 v 偏移 `height * 2`，而这对箭头在贴图里只有正常与悬停两态（`IntEdit` 里它们永远可用）——于是"上一页"在第 1 页被判为禁用时会画到空像素上：按钮透明、却仍然可点。自绘就没这个问题。
@@ -77,15 +77,22 @@ public IRecipeSlotBuilder addSlotToWidget(RecipeIngredientRole role, ISlottedWid
 Widget slots from a JEI scroll grid are now laid out in a fixed grid on EMI (TMRV bridge): origin (70, 0), 5 columns, 6 visible rows
 ```
 
-JEMI 那条的措辞是 `... on EMI: origin (...)`（不带 bridge 后缀），因为 1.0.x 时只有它。只看到第一条而看不到第二条，就说明注入没跑起来（见下面的“实现上的坑”）。
+两条链路的措辞分别是 `... on EMI (JEMI bridge): origin (...)` 与 `... on EMI (TMRV bridge): origin (...)`。只看到第一条而看不到第二条，就说明注入没跑起来（见下面的“实现上的坑”）。
 
-另外，隐藏 JEI 标签页那条也会各打一条（出现在 EMI 加载插件时）：
+隐藏 JEI 标签页的日志分三类（前缀 `[tag-hide]`），EMI 每次重载各打一遍，用来区分「计划」与「实际命中」，也方便在 TMRV 局里确认这条到底有没有起作用：
 
 ```
-Hiding JEI's built-in tag categories from EMI (category uid path 'tag_recipes/')
+[tag-hide] reload #1: armed — JEI's built-in tag categories will be hidden from EMI (uid path 'tag_recipes/'); bridges: EMI=1.1.24+1.20.1+forge, JEI=absent, TMRV=1.1.24+1.20.1+forge
+[tag-hide] reload #1: matched JEI tag category minecraft:tag_recipes/item — its recipes are hidden from EMI
+[tag-hide] reload #2: previous reload hid 17 recipes across 1 JEI tag categories [minecraft:tag_recipes/item]
 ```
 
-**没有这条**就说明 EMI 没发现这个插件（Forge 上 EMI 靠扫描 `@EmiEntrypoint` 注解发现插件），此时标签页不会消失——那就是改 mixin 方案了。
+- **armed**：插件已注册、打算隐藏哪些类别，并列出**当场加载的链路与版本**（TMRV 局里也会打，因为标签类别可能是经由 TMRV 跑 JEI 插件带进来的）；
+- **matched**：本次重载里**实际命中**的标签类别——没命中就不会有这行；只有 armed 没有 matched 就是空转；
+- **summary**：移除谓词要到 `EmiRecipes.bake()` 才执行，本次注册时还拿不到本次结果，所以**上一次**的汇总在**下一次**重载时补报。
+- **skipping**：只装了 TMRV（或两条桥都不在）时不会注册移除，改为打一行原因（TMRV 自己已经隐藏了这些标签页）。
+
+**完全看不到 `[tag-hide] armed`** 才说明 EMI 没发现这个插件（Forge 上 EMI 靠扫描 `@EmiEntrypoint` 注解发现插件），此时标签页不会消失——那就是改 mixin 方案了。
 
 ## 实现上的坑（踩过）
 
