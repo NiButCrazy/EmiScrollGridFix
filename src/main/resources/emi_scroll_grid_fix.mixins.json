@@ -14,7 +14,8 @@
     "JemiSlotWidgetMixin",
     "EmiSlotWidgetMixin",
     "JemiRecipeMixin",
-    "EmiRecipeScreenScrollMixin"
+    "EmiRecipeScreenScrollMixin",
+    "JemiRecipeHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 0
