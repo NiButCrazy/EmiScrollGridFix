@@ -5,6 +5,7 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+logoFile="logo.png"
 authors="${mod_authors}"
 description='''修复 EMI 侧两条「JEI 插件兼容链路」共同缺失的一环：IRecipeLayoutBuilder#addSlotToWidget（JEI 15.10+ 的滚动格控件）。
 
@@ -20,6 +21,8 @@ JEMI 与 TMRV 都把交给滚动格控件的槽位一律丢在 (0, 0)，于是�
 另外会隐藏 JEI 15.20 起自带的「标签页」类别：EMI 本身就有物品标签信息，两套并存只会让 EMI 多出一串重复的标签页。做法是用 EMI 的公开 API 把这类配方移出 EMI 的显示索引（EmiRegistry#removeRecipes），配方界面里的标签页随之消失。
 
 两条链路互斥、各自独立生效，不需要任何配置。只影响 EMI 上的显示，JEI 自身的界面不受影响；缺哪个桥就只记一条警告并跳过。仅客户端。'''
+[modproperties.emi_scroll_grid_fix]
+catalogueImageIcon = "logo.png"
 [[dependencies.${mod_id}]]
     modId="forge"
     mandatory=true
