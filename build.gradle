@@ -97,6 +97,9 @@ processResources {
     inputs.properties replaceProperties
     replaceProperties.put 'project', project
 
+    // 仓库里的旧 logo 备份与宣传横幅不进 jar，jar 里只保留 mods.toml 引用的 logo.png
+    exclude 'logo.old.png', 'logo_wide.png'
+
     // mods.toml 里有中文描述：读写都按 UTF-8，否则会被平台默认编码（GBK）弄成乱码
     filteringCharset = 'UTF-8'
 
