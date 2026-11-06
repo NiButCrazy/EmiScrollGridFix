@@ -1,0 +1,58 @@
+name: Publish to CurseForge
+
+# 发布 GitHub Release 后自动把该 Release 里的 jar 推到 CurseForge；
+# 也可以在 Actions 页面手动运行并填写要发布的 tag。
+#
+# 需要在仓库 Settings → Secrets and variables → Actions 里配置：
+#   CURSEFORGE_PROJECT_ID —— CurseForge 项目 ID（项目页 About 里的数字）
+#   CURSEFORGE_TOKEN      —— CurseForge 开发者 API Token
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要推送到 CurseForge 的 Release tag，例如 v1.3.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - name: Download release artifacts and changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p build/libs
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "*.jar" --dir build/libs
+          ls -la build/libs
+          BODY=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+          {
+            echo "RELEASE_BODY<<BODY_EOF"
+            echo "$BODY"
+            echo "BODY_EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Publish to CurseForge
+        uses: Kir-Antipov/mc-publish@v3
+        with:
+          curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          files: build/libs/*.jar
+          name: EMI Scroll Grid Fix ${{ env.TAG }}
+          version: ${{ env.TAG }}
+          version-type: release
+          changelog: ${{ env.RELEASE_BODY }}
+
+          game-versions: "1.20.1"
+          loaders: forge
+          java: "17"
+          environment: client
